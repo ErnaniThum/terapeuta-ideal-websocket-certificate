@@ -12,6 +12,7 @@ Options:
   --le-dir <path>        LetsEncrypt dir (default: /etc/letsencrypt)
   --webroot <path>       Webroot dir (default: /var/www/certbot)
   --nginx-name <name>    Temp nginx container name
+  --hook <path>          Executable script to run on host only if renewal happened
   -h, --help             Show this help
 EOF
 }
@@ -23,6 +24,7 @@ NGINX_NAME="nginx-certbot"
 NGINX_CONF="$(pwd)/default.conf"
 CERT_NAME=""
 FLAG="/var/run/certbot-renewed.flag"
+HOOK=""
 
 ### === PARSE ARGS ===
 while [[ $# -gt 0 ]]; do
@@ -32,6 +34,7 @@ while [[ $# -gt 0 ]]; do
     --le-dir) LE_DIR="${2:-}"; shift 2 ;;
     --webroot) WEBROOT="${2:-}"; shift 2 ;;
     --nginx-name) NGINX_NAME="${2:-}"; shift 2 ;;
+    --hook) HOOK="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1"; usage; exit 2 ;;
   esac
@@ -46,6 +49,19 @@ fi
 for p in "$LE_DIR" "$WEBROOT" "$NGINX_CONF"; do
   [[ -e "$p" ]] || { echo "ERROR: Missing $p"; exit 1; }
 done
+
+# Hook is optional, but if provided it must exist and be executable
+if [[ -n "$HOOK" ]]; then
+  if [[ ! -f "$HOOK" ]]; then
+    echo "ERROR: Hook file not found: $HOOK"
+    exit 1
+  fi
+  if [[ ! -x "$HOOK" ]]; then
+    echo "ERROR: Hook is not executable: $HOOK"
+    echo "Fix: chmod +x $HOOK"
+    exit 1
+  fi
+fi
 
 rm -f "$FLAG"
 
@@ -77,6 +93,7 @@ RENEW_ARGS=(
   renew
   --webroot -w /var/www/certbot
   --non-interactive
+  # Runs only when a cert is actually renewed; writes a host-visible flag.
   --deploy-hook "sh -c 'echo renewed > /var/run/certbot-renewed.flag'"
 )
 
@@ -93,6 +110,10 @@ docker run --rm --name certbot \
 ### === RESULT ===
 if [[ -f "$FLAG" ]]; then
   echo "✅ Certificate renewal occurred."
+  if [[ -n "$HOOK" ]]; then
+    echo "Running hook: $HOOK"
+    "$HOOK"
+  fi
 else
   echo "ℹ️ No certificates were due for renewal."
 fi
