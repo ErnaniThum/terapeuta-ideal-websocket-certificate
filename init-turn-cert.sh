@@ -14,8 +14,8 @@ if [[ ! -x "$INIT_SCRIPT" ]]; then
 fi
 
 # Default values for WS cert creation
-DOMAIN="ws.terapeuta-ideal.com.br"
-CERT_NAME="terapeuta-ideal-ws"
+DOMAIN="turn.terapeuta-ideal.com.br"
+CERT_NAME="terapeuta-ideal-turn"
 EMAIL="ernani.thum@gmail.com"
 
 # Use the same default.conf next to the scripts unless overridden
