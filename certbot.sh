@@ -20,6 +20,7 @@ docker run -it --rm --name certbot \
   --email ernani.thum@gmail.com \
   --cert-name terapeuta-ideal-ws \
   --agree-tos \
+  --non-interactive \
   -d ws.terapeuta-ideal.com.br
 
 echo "Stopping nginx container..."
