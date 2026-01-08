@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CRON_MINUTE="0"
+CRON_MINUTE="15"
 CRON_HOUR="3"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
