@@ -25,6 +25,5 @@ docker run -it --rm --name certbot \
 
 echo "Stopping nginx container..."
 docker stop "$NGINX_PID"
-docker rm "$NGINX_PID"
 
 echo "Done! Certificates saved in ./letsencrypt"
